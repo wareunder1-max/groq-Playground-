@@ -1,0 +1,17 @@
+{
+  "name": "speech-to-text-app",
+  "version": "1.0.0",
+  "description": "A simple web application that captures audio and converts it to text using Groq's speech-to-text API",
+  "type": "module",
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^1.0.0",
+    "fast-check": "^3.15.0",
+    "jsdom": "^23.0.0",
+    "vitest": "^1.0.0"
+  }
+}

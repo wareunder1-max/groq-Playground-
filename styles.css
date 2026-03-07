@@ -1,0 +1,489 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+#app {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 95vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.8em;
+}
+
+/* Configuration Section */
+#config-section {
+  margin-bottom: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: visible;
+}
+
+#config-section summary {
+  padding: 12px 15px;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-weight: 600;
+  color: #667eea;
+  user-select: none;
+}
+
+#config-section summary:hover {
+  background: #ebebeb;
+}
+
+.config-content {
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.input-group label {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: -5px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+  padding: 5px 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-label span {
+  user-select: none;
+  line-height: 1.4;
+}
+
+.input-group input[type="password"] {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.input-group input[type="password"]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.select-input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.select-input:disabled {
+  background: #f5f5f5;
+  border-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.btn-small {
+  padding: 10px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-small:hover {
+  background: #5568d3;
+}
+
+.btn-test {
+  background: #ff9800;
+}
+
+.btn-test:hover {
+  background: #f57c00;
+}
+
+/* Status Display */
+#status-display {
+  text-align: center;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Error Display */
+#error-display {
+  margin-bottom: 15px;
+  padding: 12px;
+  background: #fee;
+  border: 2px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Main Controls */
+#controls {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.talk-button {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: none;
+  background: #667eea;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  margin: 10px;
+}
+
+.talk-button:hover:not(:disabled) {
+  background: #5568d3;
+  transform: scale(1.05);
+}
+
+.talk-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.talk-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.talk-button.recording {
+  background: #e74c3c;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(231, 76, 60, 0.8);
+  }
+}
+
+.conversation-button {
+  width: 180px;
+  height: 50px;
+  border-radius: 25px;
+  border: 3px solid #667eea;
+  background: white;
+  color: #667eea;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px;
+}
+
+.conversation-button:hover:not(:disabled) {
+  background: #f0f0ff;
+  transform: scale(1.05);
+}
+
+.conversation-button:disabled {
+  border-color: #ccc;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.conversation-button.active {
+  background: #667eea;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.conversation-button .btn-icon {
+  font-size: 20px;
+}
+
+.instruction {
+  margin-top: 8px;
+  color: #666;
+  font-size: 12px;
+}
+
+/* Transcription Result */
+#result-section {
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+#transcription-output {
+  width: 100%;
+  min-height: 80px;
+  max-height: 120px;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  background: #fafafa;
+}
+
+/* Conversation Section */
+#conversation-section {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.conversation-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.select-small {
+  padding: 8px 10px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 12px;
+  background: white;
+  color: #667eea;
+  cursor: pointer;
+  font-weight: 600;
+  flex: 1;
+}
+
+.btn-icon-only {
+  padding: 8px 12px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.btn-icon-only:hover {
+  background: #f57c00;
+  transform: scale(1.1);
+}
+
+#conversation-history {
+  flex: 1;
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 12px;
+  background: #fafafa;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+}
+
+.message {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  animation: fadeIn 0.3s;
+}
+
+.message.user {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.message.assistant {
+  background: #f3e5f5;
+  border-left: 4px solid #9c27b0;
+}
+
+.message-label {
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.message-text {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stats Display */
+#stats-display {
+  margin-top: 10px;
+  padding: 12px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.stats-title {
+  font-weight: 700;
+  color: #1b5e20;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #c8e6c9;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.stat-value {
+  color: #1b5e20;
+  text-align: right;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  #app {
+    padding: 15px;
+    max-height: 98vh;
+  }
+  
+  h1 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  
+  .talk-button {
+    width: 100px;
+    height: 100px;
+    font-size: 18px;
+  }
+  
+  .conversation-button {
+    width: 160px;
+    height: 45px;
+    font-size: 14px;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  .input-group input[type="password"] {
+    width: 100%;
+  }
+  
+  .btn-small {
+    width: 100%;
+  }
+}
+
+/* Scrollbar Styling */
+#app::-webkit-scrollbar,
+#conversation-history::-webkit-scrollbar {
+  width: 6px;
+}
+
+#app::-webkit-scrollbar-track,
+#conversation-history::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#app::-webkit-scrollbar-thumb,
+#conversation-history::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+#app::-webkit-scrollbar-thumb:hover,
+#conversation-history::-webkit-scrollbar-thumb:hover {
+  background: #5568d3;
+}
