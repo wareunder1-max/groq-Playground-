@@ -19,8 +19,9 @@ class ConversationService {
     this.availableVoices = [];
     this.ttsProvider = 'browser'; // 'browser', 'elevenlabs', 'futurelinks'
     this.elevenlabsVoiceId = 'EXAVITQu4vr4xnSDxMaL'; // Default: Sarah (natural female voice)
-    this.futurelinksVoiceId = 'v_8eelc901'; // Default voice ID
+    this.futurelinksVoiceId = 'v_meklc281'; // Default: Urdu voice
     this.futurelinksOutputFormat = 'MP3_22050_128'; // Audio format
+    this.futurelinksLanguage = 'ur'; // Language code: 'ur' for Urdu, 'en' for English
     this.responseStyle = 'short'; // Default to short & casual
     
     // Load voices when available
@@ -188,7 +189,8 @@ class ConversationService {
       const requestBody = {
         voiceId: this.futurelinksVoiceId,
         text: text,
-        outputFormat: this.futurelinksOutputFormat
+        outputFormat: this.futurelinksOutputFormat,
+        language: this.futurelinksLanguage
       };
       
       console.log('   Request body:', JSON.stringify(requestBody, null, 2));
