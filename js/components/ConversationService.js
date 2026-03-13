@@ -4,19 +4,21 @@
  */
 
 class ConversationService {
-  constructor(apiKey, elevenlabsKey = null) {
+  constructor(apiKey, elevenlabsKey = null, futurelinksKey = null) {
     this.apiKey = apiKey;
     this.elevenlabsKey = elevenlabsKey;
+    this.futurelinksKey = futurelinksKey;
     this.apiEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
     this.elevenlabsEndpoint = 'https://api.elevenlabs.io/v1/text-to-speech';
+    this.futurelinksEndpoint = 'https://upliftai.org/api/tts';
     this.conversationHistory = [];
     this.speechSynthesis = window.speechSynthesis;
     this.isSpeaking = false;
     this.selectedVoice = null;
     this.availableVoices = [];
-    this.useElevenLabs = false;
-    this.forceLocalTts = false;
+    this.ttsProvider = 'browser'; // 'browser', 'elevenlabs', 'futurelinks'
     this.elevenlabsVoiceId = 'EXAVITQu4vr4xnSDxMaL'; // Default: Sarah (natural female voice)
+    this.futurelinksVoiceId = 'default';
     this.responseStyle = 'short'; // Default to short & casual
     
     // Load voices when available
@@ -137,26 +139,105 @@ class ConversationService {
   }
 
   /**
-   * Speak text using browser's text-to-speech or ElevenLabs
+   * Speak text using selected TTS provider
    * @param {string} text - Text to speak
    * @returns {Promise<void>}
    */
   async speak(text) {
-    // Force local TTS if checkbox is checked
-    if (this.forceLocalTts) {
-      console.log('🔊 Using Browser TTS (forced):', this.selectedVoice?.name || 'Default voice');
+    switch (this.ttsProvider) {
+      case 'elevenlabs':
+        if (this.elevenlabsKey) {
+          console.log('🎙️ Using ElevenLabs TTS');
+          return this.speakWithElevenLabs(text);
+        }
+        break;
+      
+      case 'futurelinks':
+        if (this.futurelinksKey) {
+          console.log('🎙️ Using FutureLinks.ai TTS');
+          return this.speakWithFutureLinks(text);
+        }
+        break;
+      
+      case 'browser':
+      default:
+        console.log('🔊 Using Browser TTS:', this.selectedVoice?.name || 'Default voice');
+        return this.speakWithBrowser(text);
+    }
+    
+    // Fallback to browser if selected provider not available
+    console.log('Selected TTS provider not available, falling back to browser');
+    return this.speakWithBrowser(text);
+  }
+
+  /**
+   * Speak using FutureLinks.ai API (upliftai.org backend)
+   * @param {string} text - Text to speak
+   * @returns {Promise<void>}
+   */
+  async speakWithFutureLinks(text) {
+    try {
+      console.log('📡 Sending to FutureLinks.ai API...');
+      console.log('   Backend: upliftai.org');
+      console.log('   Voice ID:', this.futurelinksVoiceId);
+      console.log('   API Key (first 10 chars):', this.futurelinksKey?.substring(0, 10) + '...');
+      console.log('   Text length:', text.length, 'characters');
+      
+      const requestBody = {
+        text: text,
+        voice_id: this.futurelinksVoiceId,
+        // Add other parameters based on upliftai.org API documentation
+      };
+      
+      console.log('   Request body:', JSON.stringify(requestBody, null, 2));
+      
+      const response = await fetch(this.futurelinksEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.futurelinksKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('   Response status:', response.status);
+      console.log('   Response headers:', [...response.headers.entries()]);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('   Error response body:', errorText);
+        throw new Error(`FutureLinks.ai API error: ${response.status} - ${errorText}`);
+      }
+
+      console.log('✅ FutureLinks.ai audio received, playing...');
+      const audioBlob = await response.blob();
+      console.log('   Audio blob size:', audioBlob.size, 'bytes');
+      
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+
+      return new Promise((resolve, reject) => {
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          this.isSpeaking = false;
+          console.log('✅ FutureLinks.ai playback finished');
+          resolve();
+        };
+        
+        audio.onerror = (error) => {
+          URL.revokeObjectURL(audioUrl);
+          this.isSpeaking = false;
+          console.error('   Audio playback error:', error);
+          reject(error);
+        };
+
+        this.isSpeaking = true;
+        audio.play();
+      });
+    } catch (error) {
+      console.error('❌ FutureLinks.ai TTS failed, falling back to browser TTS:', error);
       return this.speakWithBrowser(text);
     }
-    
-    // Use ElevenLabs if API key is configured
-    if (this.elevenlabsKey && this.useElevenLabs) {
-      console.log('🎙️ Using ElevenLabs TTS');
-      return this.speakWithElevenLabs(text);
-    }
-    
-    // Fallback to browser TTS
-    console.log('🔊 Using Browser TTS:', this.selectedVoice?.name || 'Default voice');
-    return this.speakWithBrowser(text);
   }
 
   /**
@@ -306,14 +387,21 @@ class ConversationService {
    * @returns {Promise<string>} Greeting message
    */
   async getGreeting() {
-    // Determine which TTS is being used
-    const usingElevenLabs = !this.forceLocalTts && this.elevenlabsKey && this.useElevenLabs;
-    
     let greeting;
-    if (usingElevenLabs) {
-      greeting = "Hello there! This is Groq speech-to-text and ElevenLabs text-to-speech testing tool. I can speak multiple languages including Urdu, English, Punjabi, Sindhi, Pashto, and Arabic. Which language would you like to talk in?";
-    } else {
-      greeting = "Hello there! This is a speech-to-text and text-to-speech testing tool using browser voices. I can speak multiple languages including Urdu, English, Punjabi, Sindhi, Pashto, and Arabic. Which language would you like to talk in?";
+    
+    switch (this.ttsProvider) {
+      case 'elevenlabs':
+        greeting = "Hello there! This is Groq speech-to-text and ElevenLabs text-to-speech testing tool. I can speak multiple languages including Urdu, English, Punjabi, Sindhi, Pashto, and Arabic. Which language would you like to talk in?";
+        break;
+      
+      case 'futurelinks':
+        greeting = "Hello there! This is Groq speech-to-text and FutureLinks AI text-to-speech testing tool. I can speak multiple languages including Urdu, English, Punjabi, Sindhi, Pashto, and Arabic. Which language would you like to talk in?";
+        break;
+      
+      case 'browser':
+      default:
+        greeting = "Hello there! This is a speech-to-text and text-to-speech testing tool using browser voices. I can speak multiple languages including Urdu, English, Punjabi, Sindhi, Pashto, and Arabic. Which language would you like to talk in?";
+        break;
     }
     
     return greeting;
@@ -333,16 +421,35 @@ class ConversationService {
    */
   setElevenlabsKey(apiKey) {
     this.elevenlabsKey = apiKey;
-    this.useElevenLabs = !!apiKey;
-    console.log('ElevenLabs TTS:', this.useElevenLabs ? 'enabled' : 'disabled');
+    console.log('ElevenLabs TTS:', apiKey ? 'enabled' : 'disabled');
   }
 
   /**
-   * Set force local TTS
+   * Set FutureLinks.ai API key
+   * @param {string} apiKey - FutureLinks.ai API key
+   */
+  setFuturelinksKey(apiKey) {
+    this.futurelinksKey = apiKey;
+    console.log('FutureLinks.ai TTS:', apiKey ? 'enabled' : 'disabled');
+  }
+
+  /**
+   * Set TTS provider
+   * @param {string} provider - 'browser', 'elevenlabs', or 'futurelinks'
+   */
+  setTtsProvider(provider) {
+    this.ttsProvider = provider;
+    console.log('TTS provider set to:', provider);
+  }
+
+  /**
+   * Set force local TTS (deprecated - use setTtsProvider instead)
    * @param {boolean} force - Whether to force local browser TTS
    */
   setForceLocalTts(force) {
-    this.forceLocalTts = force;
+    if (force) {
+      this.ttsProvider = 'browser';
+    }
     console.log('Force local TTS set to:', force);
   }
 
@@ -361,6 +468,16 @@ class ConversationService {
    */
   setElevenlabsVoice(voiceId) {
     this.elevenlabsVoiceId = voiceId;
+    console.log('ElevenLabs voice set to:', voiceId);
+  }
+
+  /**
+   * Set FutureLinks.ai voice
+   * @param {string} voiceId - FutureLinks.ai voice ID
+   */
+  setFuturelinksVoice(voiceId) {
+    this.futurelinksVoiceId = voiceId;
+    console.log('FutureLinks.ai voice set to:', voiceId);
   }
 }
 

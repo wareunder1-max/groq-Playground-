@@ -13,11 +13,15 @@ class UIController {
       apiKeyInput: null,
       saveApiKeyBtn: null,
       testApiKeyBtn: null,
+      ttsProviderSelect: null,
       elevenlabsKeyInput: null,
       saveElevenlabsKeyBtn: null,
       testElevenlabsBtn: null,
       elevenlabsVoiceSelect: null,
-      forceLocalTts: null,
+      futurelinksKeyInput: null,
+      saveFuturelinksKeyBtn: null,
+      testFuturelinksBtn: null,
+      futurelinksVoiceSelect: null,
       statusDisplay: null,
       talkBtn: null,
       conversationBtn: null,
@@ -57,11 +61,15 @@ class UIController {
     this.elements.apiKeyInput = document.getElementById('api-key-input');
     this.elements.saveApiKeyBtn = document.getElementById('save-api-key-btn');
     this.elements.testApiKeyBtn = document.getElementById('test-api-key-btn');
+    this.elements.ttsProviderSelect = document.getElementById('tts-provider-select');
     this.elements.elevenlabsKeyInput = document.getElementById('elevenlabs-key-input');
     this.elements.saveElevenlabsKeyBtn = document.getElementById('save-elevenlabs-key-btn');
     this.elements.testElevenlabsBtn = document.getElementById('test-elevenlabs-btn');
     this.elements.elevenlabsVoiceSelect = document.getElementById('elevenlabs-voice-select');
-    this.elements.forceLocalTts = document.getElementById('force-local-tts');
+    this.elements.futurelinksKeyInput = document.getElementById('futurelinks-key-input');
+    this.elements.saveFuturelinksKeyBtn = document.getElementById('save-futurelinks-key-btn');
+    this.elements.testFuturelinksBtn = document.getElementById('test-futurelinks-btn');
+    this.elements.futurelinksVoiceSelect = document.getElementById('futurelinks-voice-select');
     this.elements.statusDisplay = document.getElementById('status-display');
     this.elements.talkBtn = document.getElementById('talk-btn');
     this.elements.conversationBtn = document.getElementById('conversation-btn');
@@ -95,15 +103,19 @@ class UIController {
     // Load API key from localStorage on startup
     const storedApiKey = localStorage.getItem('sttApiKey');
     const storedProvider = localStorage.getItem('sttProvider') || 'groq';
+    const storedTtsProvider = localStorage.getItem('ttsProvider') || 'browser';
     const storedElevenlabsKey = localStorage.getItem('elevenlabsApiKey');
+    const storedFuturelinksKey = localStorage.getItem('futurelinksApiKey');
     
     this.state.sttProvider = storedProvider;
     this.elements.sttProviderSelect.value = storedProvider;
+    this.elements.ttsProviderSelect.value = storedTtsProvider;
     
     if (storedApiKey && storedApiKey.trim()) {
       this.state.hasApiKey = true;
       this.transcriptionService = new TranscriptionService(storedApiKey, storedProvider);
-      this.conversationService = new ConversationService(storedApiKey, storedElevenlabsKey);
+      this.conversationService = new ConversationService(storedApiKey, storedElevenlabsKey, storedFuturelinksKey);
+      this.conversationService.setTtsProvider(storedTtsProvider);
       this.elements.apiKeyInput.value = storedApiKey;
       // Keep buttons disabled until API is tested
       this.elements.talkBtn.disabled = true;
@@ -111,7 +123,8 @@ class UIController {
     } else {
       // Initialize with empty API key
       this.transcriptionService = new TranscriptionService('', storedProvider);
-      this.conversationService = new ConversationService('', storedElevenlabsKey);
+      this.conversationService = new ConversationService('', storedElevenlabsKey, storedFuturelinksKey);
+      this.conversationService.setTtsProvider(storedTtsProvider);
       this.elements.talkBtn.disabled = true;
       this.elements.conversationBtn.disabled = true;
       this.updateStatus('ready');
@@ -120,6 +133,13 @@ class UIController {
     if (storedElevenlabsKey && storedElevenlabsKey.trim()) {
       this.elements.elevenlabsKeyInput.value = storedElevenlabsKey;
     }
+    
+    if (storedFuturelinksKey && storedFuturelinksKey.trim()) {
+      this.elements.futurelinksKeyInput.value = storedFuturelinksKey;
+    }
+    
+    // Show/hide TTS provider configs based on selection
+    this.updateTtsProviderVisibility(storedTtsProvider);
 
     // Set up event listeners for all UI interactions
     this._setupEventListeners();
@@ -150,6 +170,11 @@ class UIController {
     // STT Provider selector
     this.elements.sttProviderSelect.addEventListener('change', (e) => {
       this.handleProviderChange(e.target.value);
+    });
+
+    // TTS Provider selector
+    this.elements.ttsProviderSelect.addEventListener('change', (e) => {
+      this.handleTtsProviderChange(e.target.value);
     });
 
     // API key save button
@@ -256,11 +281,27 @@ class UIController {
       console.log('ElevenLabs voice changed to:', e.target.options[e.target.selectedIndex].text);
     });
 
-    // Force local TTS checkbox
-    this.elements.forceLocalTts.addEventListener('change', (e) => {
-      const forceLocal = e.target.checked;
-      this.conversationService.setForceLocalTts(forceLocal);
-      console.log('Force local TTS:', forceLocal ? 'enabled' : 'disabled');
+    // FutureLinks API key save button
+    this.elements.saveFuturelinksKeyBtn.addEventListener('click', () => {
+      this.handleFuturelinksKeySubmit(this.elements.futurelinksKeyInput.value);
+    });
+
+    // FutureLinks key input - allow Enter key to submit
+    this.elements.futurelinksKeyInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        this.handleFuturelinksKeySubmit(this.elements.futurelinksKeyInput.value);
+      }
+    });
+
+    // Test FutureLinks API button
+    this.elements.testFuturelinksBtn.addEventListener('click', () => {
+      this.handleTestFuturelinks();
+    });
+
+    // FutureLinks voice selector
+    this.elements.futurelinksVoiceSelect.addEventListener('change', (e) => {
+      this.conversationService.setFuturelinksVoice(e.target.value);
+      console.log('FutureLinks voice changed to:', e.target.options[e.target.selectedIndex].text);
     });
 
     // Populate voice selector
@@ -903,6 +944,132 @@ class UIController {
 
     this.elements.statsDisplay.innerHTML = statsHTML;
     this.elements.statsDisplay.style.display = 'block';
+  }
+
+  /**
+   * Handle TTS provider change
+   * @param {string} provider - Selected TTS provider ('browser', 'elevenlabs', 'futurelinks')
+   */
+  handleTtsProviderChange(provider) {
+    this.conversationService.setTtsProvider(provider);
+    localStorage.setItem('ttsProvider', provider);
+    
+    // Update visibility of provider-specific configs
+    this.updateTtsProviderVisibility(provider);
+    
+    console.log('TTS provider changed to:', provider);
+  }
+
+  /**
+   * Update visibility of TTS provider config sections
+   * @param {string} provider - Selected TTS provider
+   */
+  updateTtsProviderVisibility(provider) {
+    const elevenlabsConfig = document.getElementById('elevenlabs-config');
+    const futurelinksConfig = document.getElementById('futurelinks-config');
+    
+    if (elevenlabsConfig) {
+      elevenlabsConfig.style.display = provider === 'elevenlabs' ? 'block' : 'none';
+    }
+    
+    if (futurelinksConfig) {
+      futurelinksConfig.style.display = provider === 'futurelinks' ? 'block' : 'none';
+    }
+  }
+
+  /**
+   * Handle FutureLinks.ai API key submission
+   * @param {string} apiKey - The FutureLinks.ai API key to save
+   */
+  handleFuturelinksKeySubmit(apiKey) {
+    if (!apiKey || !apiKey.trim()) {
+      // Clear FutureLinks key
+      localStorage.removeItem('futurelinksApiKey');
+      this.conversationService.setFuturelinksKey(null);
+      
+      const originalText = this.elements.saveFuturelinksKeyBtn.textContent;
+      this.elements.saveFuturelinksKeyBtn.textContent = 'Cleared!';
+      setTimeout(() => {
+        this.elements.saveFuturelinksKeyBtn.textContent = originalText;
+      }, 2000);
+      return;
+    }
+
+    // Save to localStorage
+    localStorage.setItem('futurelinksApiKey', apiKey.trim());
+
+    // Update service
+    this.conversationService.setFuturelinksKey(apiKey.trim());
+
+    // Provide feedback
+    const originalText = this.elements.saveFuturelinksKeyBtn.textContent;
+    this.elements.saveFuturelinksKeyBtn.textContent = 'Saved!';
+    setTimeout(() => {
+      this.elements.saveFuturelinksKeyBtn.textContent = originalText;
+    }, 2000);
+  }
+
+  /**
+   * Test FutureLinks.ai API connection
+   */
+  async handleTestFuturelinks() {
+    const apiKey = this.elements.futurelinksKeyInput.value.trim();
+    
+    if (!apiKey) {
+      this.displayError('Please enter a FutureLinks.ai API key first');
+      return;
+    }
+
+    const originalText = this.elements.testFuturelinksBtn.textContent;
+    this.elements.testFuturelinksBtn.textContent = 'Testing...';
+    this.elements.testFuturelinksBtn.disabled = true;
+    
+    // Hide any previous errors
+    this.elements.errorDisplay.style.display = 'none';
+
+    try {
+      // Test with a short message
+      this.conversationService.setFuturelinksKey(apiKey);
+      
+      // Temporarily switch to FutureLinks for test
+      const originalProvider = this.conversationService.ttsProvider;
+      this.conversationService.ttsProvider = 'futurelinks';
+      
+      await this.conversationService.speak('Testing FutureLinks AI connection');
+      
+      // Restore original provider
+      this.conversationService.ttsProvider = originalProvider;
+      
+      // Enable voice selector on success
+      this.elements.futurelinksVoiceSelect.disabled = false;
+      
+      this.elements.testFuturelinksBtn.textContent = '✓ Success!';
+      this.elements.errorDisplay.style.display = 'none';
+      
+      // Show success message briefly
+      this.elements.statusDisplay.textContent = '✓ FutureLinks.ai API verified successfully!';
+      this.elements.statusDisplay.style.background = '#e8f5e9';
+      this.elements.statusDisplay.style.color = '#1b5e20';
+      
+      setTimeout(() => {
+        this.elements.testFuturelinksBtn.textContent = originalText;
+        this.elements.testFuturelinksBtn.disabled = false;
+        this.updateStatus('ready');
+      }, 3000);
+    } catch (error) {
+      // Disable voice selector on failure
+      this.elements.futurelinksVoiceSelect.disabled = true;
+      
+      this.elements.testFuturelinksBtn.textContent = '✗ Failed';
+      
+      // Show error on screen
+      this.displayError('❌ FutureLinks.ai Test Failed: ' + error.message);
+      
+      setTimeout(() => {
+        this.elements.testFuturelinksBtn.textContent = originalText;
+        this.elements.testFuturelinksBtn.disabled = false;
+      }, 3000);
+    }
   }
 }
 
