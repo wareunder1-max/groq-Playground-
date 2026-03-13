@@ -15,6 +15,7 @@ class ConversationService {
     this.conversationHistory = [];
     this.speechSynthesis = window.speechSynthesis;
     this.isSpeaking = false;
+    this.currentAudio = null; // Store current audio element for stopping
     this.selectedVoice = null;
     this.availableVoices = [];
     this.ttsProvider = 'browser'; // 'browser', 'elevenlabs', 'futurelinks'
@@ -221,11 +222,13 @@ class ConversationService {
       
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      this.currentAudio = audio; // Store reference for stopping
 
       return new Promise((resolve, reject) => {
         audio.onended = () => {
           URL.revokeObjectURL(audioUrl);
           this.isSpeaking = false;
+          this.currentAudio = null;
           console.log('✅ FutureLinks.ai playback finished');
           resolve();
         };
@@ -233,6 +236,7 @@ class ConversationService {
         audio.onerror = (error) => {
           URL.revokeObjectURL(audioUrl);
           this.isSpeaking = false;
+          this.currentAudio = null;
           console.error('   Audio playback error:', error);
           reject(error);
         };
@@ -298,11 +302,13 @@ class ConversationService {
       
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      this.currentAudio = audio; // Store reference for stopping
 
       return new Promise((resolve, reject) => {
         audio.onended = () => {
           URL.revokeObjectURL(audioUrl);
           this.isSpeaking = false;
+          this.currentAudio = null;
           console.log('✅ ElevenLabs playback finished');
           resolve();
         };
@@ -310,6 +316,7 @@ class ConversationService {
         audio.onerror = (error) => {
           URL.revokeObjectURL(audioUrl);
           this.isSpeaking = false;
+          this.currentAudio = null;
           console.error('   Audio playback error:', error);
           reject(error);
         };
@@ -367,10 +374,20 @@ class ConversationService {
    * Stop any ongoing speech
    */
   stopSpeaking() {
+    // Stop browser TTS
     if (this.speechSynthesis) {
       this.speechSynthesis.cancel();
-      this.isSpeaking = false;
     }
+    
+    // Stop FutureLinks.ai or ElevenLabs audio
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
+    }
+    
+    this.isSpeaking = false;
+    console.log('🛑 Speech stopped (barge-in)');
   }
 
   /**

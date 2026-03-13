@@ -368,6 +368,12 @@ class UIController {
     }
 
     try {
+      // Stop any ongoing speech (barge-in)
+      if (this.conversationService.isSpeaking) {
+        console.log('Stopping ongoing speech (barge-in)');
+        this.conversationService.stopSpeaking();
+      }
+      
       this.state.isRecording = true;
       this.updateStatus('recording');
       this.elements.talkBtn.classList.add('recording');
