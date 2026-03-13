@@ -10,8 +10,8 @@ class ConversationService {
     this.futurelinksKey = futurelinksKey;
     this.apiEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
     this.elevenlabsEndpoint = 'https://api.elevenlabs.io/v1/text-to-speech';
-    // Use local proxy for FutureLinks.ai to bypass CORS
-    this.futurelinksEndpoint = 'http://localhost:3000/api/tts';
+    // FutureLinks.ai endpoint - using CORS proxy for browser access
+    this.futurelinksEndpoint = 'https://corsproxy.io/?https://api.upliftai.org/v1/synthesis/text-to-speech';
     this.conversationHistory = [];
     this.speechSynthesis = window.speechSynthesis;
     this.isSpeaking = false;
@@ -19,7 +19,8 @@ class ConversationService {
     this.availableVoices = [];
     this.ttsProvider = 'browser'; // 'browser', 'elevenlabs', 'futurelinks'
     this.elevenlabsVoiceId = 'EXAVITQu4vr4xnSDxMaL'; // Default: Sarah (natural female voice)
-    this.futurelinksVoiceId = 'default';
+    this.futurelinksVoiceId = 'v_8eelc901'; // Default voice ID
+    this.futurelinksOutputFormat = 'MP3_22050_128'; // Audio format
     this.responseStyle = 'short'; // Default to short & casual
     
     // Load voices when available
@@ -179,15 +180,15 @@ class ConversationService {
   async speakWithFutureLinks(text) {
     try {
       console.log('📡 Sending to FutureLinks.ai API...');
-      console.log('   Via proxy: localhost:3000');
+      console.log('   Endpoint: api.upliftai.org/v1/synthesis/text-to-speech');
       console.log('   Voice ID:', this.futurelinksVoiceId);
       console.log('   API Key (first 10 chars):', this.futurelinksKey?.substring(0, 10) + '...');
       console.log('   Text length:', text.length, 'characters');
       
       const requestBody = {
+        voiceId: this.futurelinksVoiceId,
         text: text,
-        voice_id: this.futurelinksVoiceId,
-        // Add other parameters based on upliftai.org API documentation
+        outputFormat: this.futurelinksOutputFormat
       };
       
       console.log('   Request body:', JSON.stringify(requestBody, null, 2));
