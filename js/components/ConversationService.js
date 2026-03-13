@@ -10,7 +10,8 @@ class ConversationService {
     this.futurelinksKey = futurelinksKey;
     this.apiEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
     this.elevenlabsEndpoint = 'https://api.elevenlabs.io/v1/text-to-speech';
-    this.futurelinksEndpoint = 'https://upliftai.org/api/tts';
+    // Use local proxy for FutureLinks.ai to bypass CORS
+    this.futurelinksEndpoint = 'http://localhost:3000/api/tts';
     this.conversationHistory = [];
     this.speechSynthesis = window.speechSynthesis;
     this.isSpeaking = false;
@@ -178,7 +179,7 @@ class ConversationService {
   async speakWithFutureLinks(text) {
     try {
       console.log('📡 Sending to FutureLinks.ai API...');
-      console.log('   Backend: upliftai.org');
+      console.log('   Via proxy: localhost:3000');
       console.log('   Voice ID:', this.futurelinksVoiceId);
       console.log('   API Key (first 10 chars):', this.futurelinksKey?.substring(0, 10) + '...');
       console.log('   Text length:', text.length, 'characters');
