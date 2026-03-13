@@ -32,30 +32,50 @@
           <button id="test-api-key-btn" class="btn-small btn-test">Test</button>
         </div>
         
-        <!-- ElevenLabs TTS (Optional) -->
+        <!-- TTS Provider Selection -->
         <div class="input-group">
-          <label>Text-to-Speech (Optional):</label>
-          <input id="elevenlabs-key-input" type="password" placeholder="ElevenLabs API Key">
-          <button id="save-elevenlabs-key-btn" class="btn-small">Save</button>
-          <button id="test-elevenlabs-btn" class="btn-small btn-test">Test</button>
-        </div>
-        
-        <div class="input-group">
-          <select id="elevenlabs-voice-select" class="select-input" disabled>
-            <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Female)</option>
-            <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Female)</option>
-            <option value="2EiwWnXFnvU5JabPnv8n">Clyde (Male)</option>
-            <option value="CYw3kZ02Hs0563khs1Fj">Dave (Male, British)</option>
-            <option value="GBv7mTt0atIp3Br8iCZE">Thomas (Male)</option>
-            <option value="IKne3meq5aSn9XLyUdCD">Charlie (Male, Australian)</option>
+          <label>Text-to-Speech Provider:</label>
+          <select id="tts-provider-select" class="select-input">
+            <option value="browser">Browser TTS (Free)</option>
+            <option value="elevenlabs">ElevenLabs</option>
+            <option value="futurelinks">FutureLinks.ai</option>
           </select>
         </div>
         
-        <div class="input-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="force-local-tts" />
-            <span>Force use local browser TTS</span>
-          </label>
+        <!-- ElevenLabs Configuration -->
+        <div id="elevenlabs-config" style="display: none;">
+          <div class="input-group">
+            <input id="elevenlabs-key-input" type="password" placeholder="ElevenLabs API Key">
+            <button id="save-elevenlabs-key-btn" class="btn-small">Save</button>
+            <button id="test-elevenlabs-btn" class="btn-small btn-test">Test</button>
+          </div>
+          
+          <div class="input-group">
+            <select id="elevenlabs-voice-select" class="select-input">
+              <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Female)</option>
+              <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Female)</option>
+              <option value="2EiwWnXFnvU5JabPnv8n">Clyde (Male)</option>
+              <option value="CYw3kZ02Hs0563khs1Fj">Dave (Male, British)</option>
+              <option value="GBv7mTt0atIp3Br8iCZE">Thomas (Male)</option>
+              <option value="IKne3meq5aSn9XLyUdCD">Charlie (Male, Australian)</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- FutureLinks.ai Configuration -->
+        <div id="futurelinks-config" style="display: none;">
+          <div class="input-group">
+            <input id="futurelinks-key-input" type="password" placeholder="FutureLinks.ai API Key">
+            <button id="save-futurelinks-key-btn" class="btn-small">Save</button>
+            <button id="test-futurelinks-btn" class="btn-small btn-test">Test</button>
+          </div>
+          
+          <div class="input-group">
+            <select id="futurelinks-voice-select" class="select-input">
+              <option value="default">Default Voice</option>
+              <!-- More voices will be added based on FutureLinks.ai API -->
+            </select>
+          </div>
         </div>
       </div>
     </details>
