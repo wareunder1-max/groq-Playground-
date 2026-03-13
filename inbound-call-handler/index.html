@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech-to-Text App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <h1>🎙️ Voice AI</h1>
+    
+    <!-- Configuration Section (Collapsible) -->
+    <details id="config-section" open>
+      <summary>⚙️ Configuration</summary>
+      
+      <div class="config-content">
+        <!-- STT Provider -->
+        <div class="input-group">
+          <label>Speech-to-Text:</label>
+          <select id="stt-provider-select" class="select-input">
+            <option value="groq">Groq Whisper (Free)</option>
+            <option value="openai">OpenAI Whisper</option>
+            <option value="deepgram">Deepgram</option>
+          </select>
+        </div>
+        
+        <!-- STT API Key -->
+        <div class="input-group">
+          <input id="api-key-input" type="password" placeholder="Enter API Key">
+          <button id="save-api-key-btn" class="btn-small">Save</button>
+          <button id="test-api-key-btn" class="btn-small btn-test">Test</button>
+        </div>
+        
+        <!-- TTS Provider Selection -->
+        <div class="input-group">
+          <label>Text-to-Speech Provider:</label>
+          <select id="tts-provider-select" class="select-input">
+            <option value="browser">Browser TTS (Free)</option>
+            <option value="elevenlabs">ElevenLabs</option>
+            <option value="futurelinks">FutureLinks.ai</option>
+          </select>
+        </div>
+        
+        <!-- ElevenLabs Configuration -->
+        <div id="elevenlabs-config" style="display: none;">
+          <div class="input-group">
+            <input id="elevenlabs-key-input" type="password" placeholder="ElevenLabs API Key">
+            <button id="save-elevenlabs-key-btn" class="btn-small">Save</button>
+            <button id="test-elevenlabs-btn" class="btn-small btn-test">Test</button>
+          </div>
+          
+          <div class="input-group">
+            <select id="elevenlabs-voice-select" class="select-input">
+              <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Female)</option>
+              <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Female)</option>
+              <option value="2EiwWnXFnvU5JabPnv8n">Clyde (Male)</option>
+              <option value="CYw3kZ02Hs0563khs1Fj">Dave (Male, British)</option>
+              <option value="GBv7mTt0atIp3Br8iCZE">Thomas (Male)</option>
+              <option value="IKne3meq5aSn9XLyUdCD">Charlie (Male, Australian)</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- FutureLinks.ai Configuration -->
+        <div id="futurelinks-config" style="display: none;">
+          <div class="input-group">
+            <input id="futurelinks-key-input" type="password" placeholder="FutureLinks.ai API Key">
+            <button id="save-futurelinks-key-btn" class="btn-small">Save</button>
+            <button id="test-futurelinks-btn" class="btn-small btn-test">Test</button>
+          </div>
+          
+          <div class="input-group">
+            <select id="futurelinks-voice-select" class="select-input">
+              <option value="default">Default Voice</option>
+              <!-- More voices will be added based on FutureLinks.ai API -->
+            </select>
+          </div>
+        </div>
+      </div>
+    </details>
+    
+    <!-- Status Display -->
+    <div id="status-display">Status: Ready</div>
+    
+    <!-- Error Display -->
+    <div id="error-display" style="display: none;"></div>
+    
+    <!-- Main Controls -->
+    <div id="controls">
+      <button id="talk-btn" class="talk-button" disabled>TALK</button>
+      <p class="instruction">Hold to record, release to transcribe</p>
+      
+      <button id="conversation-btn" class="conversation-button" disabled>
+        <span class="btn-icon">💬</span>
+        <span class="btn-text">CONVERSATION</span>
+      </button>
+    </div>
+    
+    <!-- Transcription Result -->
+    <div id="result-section">
+      <textarea id="transcription-output" readonly placeholder="Your transcription will appear here..."></textarea>
+      <div id="stats-display" style="display: none;"></div>
+    </div>
+    
+    <!-- Conversation Section -->
+    <div id="conversation-section" style="display: none;">
+      <div class="conversation-header">
+        <select id="response-style-select" class="select-small">
+          <option value="short">Short</option>
+          <option value="normal">Normal</option>
+          <option value="detailed">Detailed</option>
+        </select>
+        <select id="voice-select" class="select-small">
+          <option value="">Voice...</option>
+        </select>
+        <button id="new-conversation-btn" class="btn-icon-only">🔄</button>
+      </div>
+      <div id="conversation-history"></div>
+    </div>
+  </div>
+  
+  <script src="js/components/AudioRecorder.js"></script>
+  <script src="js/components/TranscriptionService.js"></script>
+  <script src="js/components/ConversationService.js"></script>
+  <script src="js/components/UIController.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
