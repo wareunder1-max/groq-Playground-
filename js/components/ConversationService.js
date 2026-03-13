@@ -10,8 +10,8 @@ class ConversationService {
     this.futurelinksKey = futurelinksKey;
     this.apiEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
     this.elevenlabsEndpoint = 'https://api.elevenlabs.io/v1/text-to-speech';
-    // FutureLinks.ai endpoint - using allOrigins CORS proxy
-    this.futurelinksEndpoint = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.upliftai.org/v1/synthesis/text-to-speech');
+    // FutureLinks.ai endpoint - direct API call (CORS supported)
+    this.futurelinksEndpoint = 'https://api.upliftai.org/v1/synthesis/text-to-speech';
     this.conversationHistory = [];
     this.speechSynthesis = window.speechSynthesis;
     this.isSpeaking = false;
@@ -199,7 +199,9 @@ class ConversationService {
           'Authorization': `Bearer ${this.futurelinksKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        mode: 'cors',
+        credentials: 'omit'
       });
 
       console.log('   Response status:', response.status);
